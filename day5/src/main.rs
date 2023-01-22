@@ -32,36 +32,65 @@ fn get_stack_crates(input: &mut Vec<u8>) -> ([Vec<u8>; STACK_SIZE], Vec<usize>) 
     (stack_list, crates)
 }
 
-fn move_crates_in_stack(moves: &mut ([Vec<u8>; STACK_SIZE], Vec<usize>)) {
+fn move_crates_in_stack(moves: &([Vec<u8>; STACK_SIZE], Vec<usize>), cratemover: usize) {
+    // clone it why not
+    let mut moves = moves.clone();
     // Iter over the moves 3 at time [size, from, to]
     moves.1.chunks(3).for_each(|n| {
-        // let size = n[0];
+        let size = n[0];
         // let from = n[1] - 1;
         // let to = n[2] - 1;
         // println!("{}, {}, {}", n[0], n[1], n[2]);
 
-        for _ in 0..n[0] {
-            let from_stack = moves.0[n[1] - 1].pop().unwrap();
-            moves.0[n[2] - 1].push(from_stack);
+        // moves.0.iter().for_each(|n| {
+        //     println!("{:?}", { n.iter().map(|c| *c as char).collect::<String>() });
+        // });
+
+        match cratemover {
+            9000 => {
+                for _ in 0..size {
+                    if let Some(from_stack) = moves.0[n[1] - 1].pop() {
+                        moves.0[n[2] - 1].push(from_stack);
+                    }
+                }
+            }
+            9001 => {
+                if size == 1 {
+                    if let Some(from_stack) = moves.0[n[1] - 1].pop() {
+                        moves.0[n[2] - 1].push(from_stack);
+                    }
+                } else {
+                    moves.0[n[2] - 1]
+                        .extend(moves.0[n[1] - 1][moves.0[n[1] - 1].len() - size..].to_vec());
+                    moves.0[n[1] - 1].truncate(moves.0[n[1] - 1].len() - size);
+                }
+            }
+            _ => {
+                println!("cratemover is invalid! :(");
+            }
         }
     });
+    print_answer(&moves.0);
+}
 
+fn print_answer(moves: &[Vec<u8>; STACK_SIZE]) {
     moves
-        .0
         .iter()
         .for_each(|x| print!("{}", *x.iter().last().unwrap() as char));
+    println!();
 }
 
 fn main() -> Result<()> {
     let mut input = include_bytes!("../input.txt").to_vec();
-    let mut pairs = get_stack_crates(&mut input);
+    let pairs = get_stack_crates(&mut input);
 
     // print crates
     // pairs.0.iter().for_each(|n| {
     //     println!("{:?}", { n.iter().map(|c| *c as char).collect::<String>() });
     // });
 
-    move_crates_in_stack(&mut pairs);
+    move_crates_in_stack(&pairs, 9000);
+    move_crates_in_stack(&pairs, 9001);
 
     Ok(())
 }
